@@ -1,5 +1,5 @@
 (defconst keylog-log-buffer-dir "~/.emacs.d/keylog/")
-(defvar keylog-log-buffer-name (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)))
+(defvar keylog-log-buffer-name (concat "keylog-" (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))
 
 ; This logic is a modified version of Chris Done's script for key logging found here: http://lpaste.net/91637
 (defun log-keys ()
