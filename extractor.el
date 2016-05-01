@@ -14,7 +14,7 @@
 
 (defun line->major-mode-and-key (line)
   (let ((items (split-string line " ")))
-    (list (nth 1 items) (nth 2 items))))
+    (list (nth 1 items) (nthcdr 2 items))))
 
 (defun aggregate-keymap (mode-and-key-lst)
   (let ((ag-map (make-hash-table :test 'contents-hash)))
@@ -29,7 +29,6 @@
 	(puthash mode cur-mode-map ag-map)))
 
     ag-map))
-
 
 (defun get-keymap-for-file (file)
   (->> (line-seq file)
