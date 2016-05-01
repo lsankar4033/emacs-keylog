@@ -1,0 +1,25 @@
+(require 'utils)
+
+(provide 'logger)
+
+(defvar keylog-log-buffer-name (concat "keylog-" (format-time-string log-file-date-format (current-time))))
+
+(defun log-keys ()
+  (interactive)
+  (let ((deactivate-mark deactivate-mark))
+    (when (this-command-keys)
+      (let ((major-mode-name major-mode)
+	    (tt (format-time-string "%s" (current-time))))
+	(with-current-buffer (get-buffer-create keylog-log-buffer-name)
+	  (goto-char (point-max))
+	  (if (eql this-command 'self-insert-command)
+	      (let ((desc (key-description (this-command-keys))))
+		(if (= 1 (length desc))
+		    (insert (format "\n%s %S " tt major-mode-name) desc)
+		  (insert (format "\n%s %S " tt major-mode-name) " " desc " ")))
+	    (insert (format "\n%s %S " tt major-mode-name) (key-description (this-command-keys)))))))))
+
+(defun save-log-buffer ()
+  (interactive)
+  (with-current-buffer (get-buffer-create keylog-log-buffer-name)
+    (write-file (concat keylog-log-buffer-dir keylog-log-buffer-name ".log"))))
