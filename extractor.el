@@ -1,6 +1,6 @@
 (require 'cl-lib)
 
-(require 'utils)
+(require 'keylog-utils)
 
 (provide 'extractor)
 
@@ -78,6 +78,22 @@
     (->> files
 	 (mapcar 'get-keymap-for-file)
 	 (merge-keymaps))))
+
+(defconst keylog-view-buffer "*view-buffer*")
+
+(defun recent-keymap-view ()
+  (interactive)
+  (with-current-buffer (get-buffer-create keylog-view-buffer)
+    (let ((km (get-keymap-for-date-range
+	       (time-subtract (current-time) (seconds-for-time (* 60 60 24 5)))
+	       (current-time) )))
+
+      ; TODO sort km by total count and display mode -> count
+
+      ; TODO remove
+      (insert "WOO")))
+
+  (switch-to-buffer-other-window keylog-view-buffer))
 
 (->>
  (get-keymap-for-date-range (date-to-time "2016-04-11 00:00:00") (date-to-time "2016-04-14 12:10:10"))

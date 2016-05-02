@@ -1,4 +1,4 @@
-(require 'utils)
+(require 'keylog-utils)
 
 (provide 'logger)
 

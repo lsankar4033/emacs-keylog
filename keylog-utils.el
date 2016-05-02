@@ -1,4 +1,4 @@
-(provide 'utils)
+(provide 'keylog-utils)
 
 (defconst keylog-log-buffer-dir "~/.emacs.d/keylog/")
 (defconst log-file-date-format "%Y-%m-%d %H:%M:%S")

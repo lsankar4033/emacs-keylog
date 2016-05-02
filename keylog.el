@@ -1,6 +1,6 @@
 (require 'cl-lib)
 
-(require 'utils)
+(require 'keylog-utils)
 (require 'logger)
 (require 'extractor)
 
