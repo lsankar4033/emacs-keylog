@@ -94,7 +94,3 @@
       (insert "WOO")))
 
   (switch-to-buffer-other-window keylog-view-buffer))
-
-(->>
- (get-keymap-for-date-range (date-to-time "2016-04-11 00:00:00") (date-to-time "2016-04-14 12:10:10"))
- (gethash "lisp-interaction-mode"))
