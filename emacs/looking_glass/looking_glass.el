@@ -4,10 +4,12 @@
 (require 'cl-lib)
 
 ;;; Logging hooks
-
-;; TODO these hooks should be configurable in .emacs.d
-(add-hook 'pre-command-hook 'log-keys)
-(add-hook 'kill-emacs-hook 'save-log-buffer)
+(define-minor-mode global-looking-glass-mode
+  "Global minor mode for looking-glass loggin."
+  nil nil nil
+  (when global-looking-glass-mode
+      (progn (add-hook 'pre-command-hook 'log-keys)
+             (add-hook 'kill-emacs-hook 'save-log-buffer))))
 
 ;;; Logging code
 
