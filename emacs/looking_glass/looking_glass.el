@@ -1,8 +1,22 @@
-(require 'keylog-utils)
+;; This code is used to log all keystrokes to disk. Keystrokes are logged with timestamp and the major mode
+;; they were entered in.
 
-(provide 'logger)
+(require 'cl-lib)
 
-(defvar keylog-log-buffer-name (concat "keylog-" (format-time-string log-file-date-format (current-time))))
+;;; Logging hooks
+
+;; TODO these hooks should be configurable in .emacs.d
+(add-hook 'pre-command-hook 'log-keys)
+(add-hook 'kill-emacs-hook 'save-log-buffer)
+
+;;; Logging code
+
+;; TODO buffer-dir should be configurable
+(defconst keylog-log-buffer-dir "~/.emacs.d/looking_glass/")
+(defconst log-file-date-format "%Y-%m-%d %H:%M:%S")
+
+;; NOTE this is currently created at load time of *this* file
+(defvar keylog-log-buffer-name (format-time-string log-file-date-format (current-time)))
 
 (defun log-keys ()
   (interactive)

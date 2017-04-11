@@ -1,7 +1,4 @@
 # TODO
-- think of a better name and restructure repo
-  - mirror?
-  - looking_glass/lg?
 - flesh out README
 - add python CLI
   - docopt
