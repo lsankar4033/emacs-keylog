@@ -21,11 +21,14 @@ from tabulate import tabulate
 # TODO should be configurable and synced with editor plugins
 KEYLOG_BUFFER_DIR = os.path.expanduser("~/.emacs.d/looking_glass/")
 
+# TODO this should probably be specified via the CLI
+MAX_OUTPUT_TABLE_LENGTH = 10
+
 def keylog_file_to_dt(filename):
     dt_str = filename.split(".log")[0]
     return parser.parse(dt_str)
 
-# extract (major_mode, key) from keylog line
+# TODO The below methods are mutually redundant and due for a refactor.
 def keylog_line_to_mode_key(l):
     elements = [e for e in l.strip().split(" ") if e != ''] # remove extra spaces
     mode = elements[1]
@@ -36,7 +39,9 @@ def keylog_line_to_dt(l):
     utc_timestamp = int(l.strip().split(" ")[0])
     return pytz.utc.localize(datetime.fromtimestamp(utc_timestamp))
 
-# TODO unit tests. Would involve mocking out fs or building test versions of keylog files
+def keylog_line_to_mode(l):
+    return l.strip().split(" ")[1]
+
 # TODO this method should allow caller to specify major modes to exclude (i.e. insert modes)
 def build_key_count_map(num_days, major_mode):
     """Builds a map of key counts by reading all applicable keylog files found at KEYLOG_BUFFER_DIR.
@@ -48,7 +53,7 @@ def build_key_count_map(num_days, major_mode):
     """
     start_date = None
     if num_days is not None:
-        start_date = pytz.utc.localize(datetime.utcnow() - timedelta(days=num_days))
+        start_date = pytz.utc.localize(datetime.utcnow() - timedelta(days=int(num_days)))
 
     keylog_filenames = os.listdir(KEYLOG_BUFFER_DIR)
     if start_date is not None:
@@ -71,12 +76,47 @@ def build_key_count_map(num_days, major_mode):
     if start_date is not None:
         keylog_lines = filter(lambda l: keylog_line_to_dt(l) >= start_date, keylog_lines)
 
+    if major_mode is not None:
+        keylog_lines = filter(lambda l: keylog_line_to_mode(l) == major_mode, keylog_lines)
+
     keylog_lines = sorted(keylog_lines, key=keylog_line_to_mode_key) # need to do this because groupby only
                                                                      # creates new groups on group change
     ret = {}
     for k, g in groupby(keylog_lines, keylog_line_to_mode_key):
         ret[k] = len(list(g))
     return ret
+
+# NOTE in the future, I may want more expressibility in what dimensions are retained.
+def collapse_key_count_map(key_count_map, idx_to_retain):
+    """Collapses the key_count_map (form is {(dimension_tuple): count}) to a map representing the aggregated
+    counts for one of the dimensions in the tuple key.
+    """
+    ret = {}
+    for k, v in key_count_map.items():
+        new_k = k[idx_to_retain]
+
+        if new_k in ret:
+            ret[new_k] += v
+        else:
+            ret[new_k] = v
+
+    return ret
+
+# TODO limit results to a small fixed number that's easily parseable!
+def print_count_map(count_map, headers):
+    """Print the provided 'count_map' as a formatted table with dimension headers 'headers'.
+    """
+    rows = []
+    for k, v in count_map.items():
+        dim_row = [k]
+        if isinstance(k, tuple):
+            dim_row = list(k)
+
+        rows.append(dim_row + [v])
+    rows.sort(key=lambda row: row[-1], reverse=True)
+    rows = rows[0: MAX_OUTPUT_TABLE_LENGTH]
+
+    print(tabulate(rows, headers=headers + ["count"]))
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version="looking-glass 0.1")
@@ -86,6 +126,9 @@ if __name__ == "__main__":
     key_count_map = build_key_count_map(num_days, major_mode)
 
     if major_mode is None:
-        # TODO print mode breakdown using k_c_map
+        print_count_map(collapse_key_count_map(key_count_map, 0), ["major mode"])
+        print("\n")
+        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"])
 
-    # TODO print keystroke breakdown using k_c_map
+    else:
+        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"])
