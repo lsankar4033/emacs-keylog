@@ -1,13 +1,14 @@
 """Looking glass. Currently only implemented for emacs. Vim comes later.
 
 Usage:
-  lg.py [--num-days=<days>] [--major-mode=<mode>]
+  lg.py [--num-days=<days>] [--major-mode=<mode>] [--max-output-length=<length>]
 
 Options:
-  -h --help            Show this screen.
-  --version            Show version.
-  --major-mode=<mode>  Limit results to the specified Emacs major-mode.
-  --num-days=<days>    Number of days in the past to consider.
+  -h --help                    Show this screen.
+  --version                    Show version.
+  --major-mode=<mode>          Limit results to the specified Emacs major-mode.
+  --num-days=<days>            Number of days in the past to consider.
+  --max-output-length=<length> Max number of rows to output per table  [default: 10].
 
 """
 import os
@@ -20,9 +21,6 @@ from tabulate import tabulate
 
 # TODO should be configurable and synced with editor plugins
 KEYLOG_BUFFER_DIR = os.path.expanduser("~/.emacs.d/looking_glass/")
-
-# TODO this should probably be specified via the CLI
-MAX_OUTPUT_TABLE_LENGTH = 10
 
 def keylog_file_to_dt(filename):
     dt_str = filename.split(".log")[0]
@@ -101,7 +99,7 @@ def collapse_key_count_map(key_count_map, idx_to_retain):
 
     return ret
 
-def print_count_map(count_map, headers):
+def print_count_map(count_map, headers, max_output_length):
     """Print the provided 'count_map' as a formatted table with dimension headers 'headers'.
     """
     rows = []
@@ -112,7 +110,7 @@ def print_count_map(count_map, headers):
 
         rows.append(dim_row + [v])
     rows.sort(key=lambda row: row[-1], reverse=True)
-    rows = rows[0: MAX_OUTPUT_TABLE_LENGTH]
+    rows = rows[0: max_output_length]
 
     print(tabulate(rows, headers=headers + ["count"]))
 
@@ -120,13 +118,14 @@ if __name__ == "__main__":
     arguments = docopt(__doc__, version="looking-glass 0.1")
     major_mode = arguments["--major-mode"]
     num_days = arguments["--num-days"]
+    max_output_length = int(arguments["--max-output-length"])
 
     key_count_map = build_key_count_map(num_days, major_mode)
 
     if major_mode is None:
-        print_count_map(collapse_key_count_map(key_count_map, 0), ["major mode"])
+        print_count_map(collapse_key_count_map(key_count_map, 0), ["major mode"], max_output_length)
         print("\n")
-        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"])
+        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"], max_output_length)
 
     else:
-        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"])
+        print_count_map(collapse_key_count_map(key_count_map, 1), ["key"], max_output_length)
