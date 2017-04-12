@@ -1,12 +1,12 @@
 """Looking glass. Currently only implemented for emacs. Vim comes later.
 
 Usage:
-  lg.py [--num-days=<days>] [--major-mode=<mode>] [--max-output-length=<length>]
+  lg.py [--num-days=<days>] [--mode=<mode>] [--max-output-length=<length>]
 
 Options:
   -h --help                    Show this screen.
   --version                    Show version.
-  --major-mode=<mode>          Limit results to the specified Emacs major-mode.
+  --mode=<mode>                Limit results to the specified Emacs major-mode.
   --num-days=<days>            Number of days in the past to consider.
   --max-output-length=<length> Max number of rows to output per table  [default: 10].
 
@@ -40,11 +40,11 @@ def keylog_line_to_dt(l):
 def keylog_line_to_mode(l):
     return l.strip().split(" ")[1]
 
-def build_key_count_map(num_days, major_mode):
+def build_key_count_map(num_days, mode):
     """Builds a map of key counts by reading all applicable keylog files found at KEYLOG_BUFFER_DIR.
     The format is {(mode,key): count}
 
-    If major_mode isn't 'None', filters to keystrokes made in major_mode.
+    If mode isn't 'None', filters to keystrokes made in mode.
 
     If num_days isn't 'None', filters to only those keystrokes made in the last num_days days.
     """
@@ -73,8 +73,8 @@ def build_key_count_map(num_days, major_mode):
     if start_date is not None:
         keylog_lines = filter(lambda l: keylog_line_to_dt(l) >= start_date, keylog_lines)
 
-    if major_mode is not None:
-        keylog_lines = filter(lambda l: keylog_line_to_mode(l) == major_mode, keylog_lines)
+    if mode is not None:
+        keylog_lines = filter(lambda l: keylog_line_to_mode(l) == mode, keylog_lines)
 
     keylog_lines = sorted(keylog_lines, key=keylog_line_to_mode_key) # need to do this because groupby only
                                                                      # creates new groups on group change
@@ -116,14 +116,14 @@ def print_count_map(count_map, headers, max_output_length):
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version="looking-glass 0.1")
-    major_mode = arguments["--major-mode"]
+    mode = arguments["--mode"]
     num_days = arguments["--num-days"]
     max_output_length = int(arguments["--max-output-length"])
 
-    key_count_map = build_key_count_map(num_days, major_mode)
+    key_count_map = build_key_count_map(num_days, mode)
 
-    if major_mode is None:
-        print_count_map(collapse_key_count_map(key_count_map, 0), ["major mode"], max_output_length)
+    if mode is None:
+        print_count_map(collapse_key_count_map(key_count_map, 0), ["mode"], max_output_length)
         print("\n")
         print_count_map(collapse_key_count_map(key_count_map, 1), ["key"], max_output_length)
 
