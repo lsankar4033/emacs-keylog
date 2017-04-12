@@ -42,7 +42,6 @@ def keylog_line_to_dt(l):
 def keylog_line_to_mode(l):
     return l.strip().split(" ")[1]
 
-# TODO this method should allow caller to specify major modes to exclude (i.e. insert modes)
 def build_key_count_map(num_days, major_mode):
     """Builds a map of key counts by reading all applicable keylog files found at KEYLOG_BUFFER_DIR.
     The format is {(mode,key): count}
@@ -102,7 +101,6 @@ def collapse_key_count_map(key_count_map, idx_to_retain):
 
     return ret
 
-# TODO limit results to a small fixed number that's easily parseable!
 def print_count_map(count_map, headers):
     """Print the provided 'count_map' as a formatted table with dimension headers 'headers'.
     """
